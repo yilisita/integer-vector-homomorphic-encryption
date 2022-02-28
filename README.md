@@ -15,7 +15,7 @@ Full tests of the functions have not been conducted (because I don't know how) s
 ## To Use
 * Get the package:
 ```
-    go get -u "github.com/yilisita/intvec"
+    go get -u "github.com/yilisita/integer-vector-homomorphic-encryption"
 ```
 * Generate the plaintext:
 ```
