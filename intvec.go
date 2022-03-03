@@ -2,7 +2,7 @@
  * @Author: Wen Jiajun
  * @Date: 2022-01-29 15:03:03
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-02-28 18:50:49
+ * @LastEditTime: 2022-03-03 18:21:12
  * @FilePath: \test\intvec\intvec.go
  * @Description: an implementation for integer vector encryption schema
  *               see(https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.471.387&rep=rep1&type=pdf)
@@ -51,6 +51,16 @@ type Plaintext struct {
 // a vector, usually longer than the plaintext vector
 type Ciphertext struct {
 	Matrix
+}
+
+// GetData returns ciphertext's data as a slice
+func (c *Ciphertext) GetData() []*big.Int {
+	return c.data
+}
+
+// GetData returns plaintext's data as a slice
+func (p *Plaintext) GetData() []*big.Int {
+	return p.data
 }
 
 // NewPlaintext returns a plaintext using the input,
