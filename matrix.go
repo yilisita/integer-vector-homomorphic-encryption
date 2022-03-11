@@ -2,7 +2,7 @@
  * @Author: Wen Jiajun
  * @Date: 2022-02-27 19:46:25
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-03-11 17:51:45
+ * @LastEditTime: 2022-03-11 18:14:42
  * @FilePath: \integer-vector-homomorphic-encryption\matrix.go
  * @Description:
  */
@@ -54,6 +54,8 @@ func (m *Matrix) GetRows() int {
 	return m.rows
 }
 
+// Marshal converts a matrix to []byte, the fields names
+// correspond with matrixStr struct's json tag.
 func (m Matrix) Marshal() []byte {
 	var dataSlice []string
 	for _, v := range m.data {
@@ -74,6 +76,9 @@ func (m Matrix) Marshal() []byte {
 	return resJSON
 }
 
+// Unmarshal sets the matrix fields using the input []byte,
+// the input's field name should be identical to matrixStr's
+// json tag.
 func (m *Matrix) Unmarshal(matrixByte []byte) error {
 	var container matrixStr
 	err := json.Unmarshal(matrixByte, &container)
