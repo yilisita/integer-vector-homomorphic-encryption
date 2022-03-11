@@ -2,8 +2,8 @@
  * @Author: Wen Jiajun
  * @Date: 2022-01-29 15:03:03
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-03-11 15:29:51
- * @FilePath: \intvec\intvec.go
+ * @LastEditTime: 2022-03-11 17:57:34
+ * @FilePath: \integer-vector-homomorphic-encryption\intvec.go
  * @Description: an implementation for integer vector encryption schema
  *               see(https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.471.387&rep=rep1&type=pdf)
  */
@@ -11,7 +11,6 @@
 package intvec
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"math/big"
@@ -57,27 +56,19 @@ type Ciphertext struct {
 // Convert2Byte converts a key to []byte representation with the
 // key unchanged.
 func (pk PublicKey) Convert2Byte() []byte {
-	pkJSON, err := json.Marshal(pk)
-	if err != nil {
-		return nil
-	}
-	return pkJSON
+	return pk.Marshal()
 }
 
 // Convert2Byte converts a key to []byte representation with the
 // key unchanged.
 func (sk PrivateKey) Convert2Byte() []byte {
-	skJSON, err := json.Marshal(sk)
-	if err != nil {
-		return nil
-	}
-	return skJSON
+	return sk.Marshal()
 }
 
 // NewPrivateKeyFromByte creates a private key from []byte input
 func NewPrivateKeyFromByte(skByte []byte) (PrivateKey, error) {
 	var sk PrivateKey
-	err := json.Unmarshal(skByte, &sk)
+	err := sk.Unmarshal(skByte)
 	if err != nil {
 		return PrivateKey{}, err
 	}
@@ -88,7 +79,7 @@ func NewPrivateKeyFromByte(skByte []byte) (PrivateKey, error) {
 // NewPublicKeyFromByte creates a public key from []byte input
 func NewPublicKeyFromByte(pkByte []byte) (PublicKey, error) {
 	var pk PublicKey
-	err := json.Unmarshal(pkByte, &pk)
+	err := pk.Unmarshal(pkByte)
 	if err != nil {
 		return PublicKey{}, err
 	}

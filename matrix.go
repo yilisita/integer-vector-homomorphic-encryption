@@ -2,8 +2,8 @@
  * @Author: Wen Jiajun
  * @Date: 2022-02-27 19:46:25
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-02-28 18:16:20
- * @FilePath: \test\intvec\matrix.go
+ * @LastEditTime: 2022-03-11 17:51:45
+ * @FilePath: \integer-vector-homomorphic-encryption\matrix.go
  * @Description:
  */
 
@@ -31,6 +31,7 @@ package intvec
 */
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
 )
@@ -43,8 +44,54 @@ type Matrix struct {
 	data    []*big.Int //将矩阵中所有元素作为一维切片
 }
 
+type matrixStr struct {
+	Rows    int      `json:"rows"`
+	Cols    int      `json:"cols"`
+	DataStr []string `json:"datastr"`
+}
+
 func (m *Matrix) GetRows() int {
 	return m.rows
+}
+
+func (m Matrix) Marshal() []byte {
+	var dataSlice []string
+	for _, v := range m.data {
+		dataSlice = append(dataSlice, v.String())
+	}
+
+	var resStruct = matrixStr{
+		Rows:    m.rows,
+		Cols:    m.columns,
+		DataStr: dataSlice,
+	}
+
+	resJSON, err := json.Marshal(resStruct)
+	if err != nil {
+		return nil
+	}
+
+	return resJSON
+}
+
+func (m *Matrix) Unmarshal(matrixByte []byte) error {
+	var container matrixStr
+	err := json.Unmarshal(matrixByte, &container)
+	if err != nil {
+		return err
+	}
+	m.rows = container.Rows
+	m.columns = container.Cols
+	var dataSlice []*big.Int
+	for _, v := range container.DataStr {
+		tempInt, ok := new(big.Int).SetString(v, 10)
+		if !ok {
+			return fmt.Errorf("Error converting string %v to *big.Int", v)
+		}
+		dataSlice = append(dataSlice, tempInt)
+	}
+	m.data = dataSlice
+	return nil
 }
 
 func (m *Matrix) GetColumns() int {
