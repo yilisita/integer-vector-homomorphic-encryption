@@ -2,8 +2,8 @@
  * @Author: Wen Jiajun
  * @Date: 2022-01-29 15:03:03
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-03-03 18:21:12
- * @FilePath: \test\intvec\intvec.go
+ * @LastEditTime: 2022-03-11 15:29:51
+ * @FilePath: \intvec\intvec.go
  * @Description: an implementation for integer vector encryption schema
  *               see(https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.471.387&rep=rep1&type=pdf)
  */
@@ -11,6 +11,7 @@
 package intvec
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"math/big"
@@ -53,6 +54,48 @@ type Ciphertext struct {
 	Matrix
 }
 
+// Convert2Byte converts a key to []byte representation with the
+// key unchanged.
+func (pk PublicKey) Convert2Byte() []byte {
+	pkJSON, err := json.Marshal(pk)
+	if err != nil {
+		return nil
+	}
+	return pkJSON
+}
+
+// Convert2Byte converts a key to []byte representation with the
+// key unchanged.
+func (sk PrivateKey) Convert2Byte() []byte {
+	skJSON, err := json.Marshal(sk)
+	if err != nil {
+		return nil
+	}
+	return skJSON
+}
+
+// NewPrivateKeyFromByte creates a private key from []byte input
+func NewPrivateKeyFromByte(skByte []byte) (PrivateKey, error) {
+	var sk PrivateKey
+	err := json.Unmarshal(skByte, &sk)
+	if err != nil {
+		return PrivateKey{}, err
+	}
+
+	return sk, nil
+}
+
+// NewPublicKeyFromByte creates a public key from []byte input
+func NewPublicKeyFromByte(pkByte []byte) (PublicKey, error) {
+	var pk PublicKey
+	err := json.Unmarshal(pkByte, &pk)
+	if err != nil {
+		return PublicKey{}, err
+	}
+
+	return pk, nil
+}
+
 // GetData returns ciphertext's data as a slice
 func (c *Ciphertext) GetData() []*big.Int {
 	return c.data
@@ -80,8 +123,11 @@ func NewCiphertext(data []*big.Int) Ciphertext {
 }
 
 // GetKeyPairs generate the (privKey, pubKey) pair
+//
 // @param: row = the message vector's length
+//
 // @param: col = the ciphertext vector's length(self-defined)
+//
 // @return: (privKey, pubKey)
 func GetKeyPairs(row, col, bound int) (PrivateKey, PublicKey) {
 	// Randomly construct the T part of a new private key
