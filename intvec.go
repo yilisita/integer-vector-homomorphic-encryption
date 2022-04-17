@@ -2,7 +2,7 @@
  * @Author: Wen Jiajun
  * @Date: 2022-01-29 15:03:03
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-03-11 17:57:34
+ * @LastEditTime: 2022-04-17 16:32:58
  * @FilePath: \integer-vector-homomorphic-encryption\intvec.go
  * @Description: an implementation for integer vector encryption schema
  *               see(https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.471.387&rep=rep1&type=pdf)
@@ -66,25 +66,25 @@ func (sk PrivateKey) Convert2Byte() []byte {
 }
 
 // NewPrivateKeyFromByte creates a private key from []byte input
-func NewPrivateKeyFromByte(skByte []byte) (PrivateKey, error) {
+func NewPrivateKeyFromByte(skByte []byte) (*PrivateKey, error) {
 	var sk PrivateKey
 	err := sk.Unmarshal(skByte)
 	if err != nil {
-		return PrivateKey{}, err
+		return nil, err
 	}
 
-	return sk, nil
+	return &sk, nil
 }
 
 // NewPublicKeyFromByte creates a public key from []byte input
-func NewPublicKeyFromByte(pkByte []byte) (PublicKey, error) {
+func NewPublicKeyFromByte(pkByte []byte) (*PublicKey, error) {
 	var pk PublicKey
 	err := pk.Unmarshal(pkByte)
 	if err != nil {
-		return PublicKey{}, err
+		return nil, err
 	}
 
-	return pk, nil
+	return &pk, nil
 }
 
 // GetData returns ciphertext's data as a slice
@@ -99,16 +99,16 @@ func (p *Plaintext) GetData() []*big.Int {
 
 // NewPlaintext returns a plaintext using the input,
 // By default, the row = len(data), the column = 1
-func NewPlaintext(data []*big.Int) Plaintext {
-	return Plaintext{
+func NewPlaintext(data []*big.Int) *Plaintext {
+	return &Plaintext{
 		NewMatrix(len(data), 1, data),
 	}
 }
 
 // NewCiphertext returns a ciphertext using the input,
 // By default, the row = len(data), the column = 1
-func NewCiphertext(data []*big.Int) Ciphertext {
-	return Ciphertext{
+func NewCiphertext(data []*big.Int) *Ciphertext {
+	return &Ciphertext{
 		NewMatrix(len(data), 1, data),
 	}
 }
@@ -120,7 +120,7 @@ func NewCiphertext(data []*big.Int) Ciphertext {
 // @param: col = the ciphertext vector's length(self-defined)
 //
 // @return: (privKey, pubKey)
-func GetKeyPairs(row, col, bound int) (PrivateKey, PublicKey) {
+func GetKeyPairs(row, col, bound int) (*PrivateKey, *PublicKey) {
 	// Randomly construct the T part of a new private key
 	// For production security, use "crypto/rand"
 	rand.Seed(time.Now().Unix())
@@ -157,13 +157,13 @@ func GetKeyPairs(row, col, bound int) (PrivateKey, PublicKey) {
 	// which swtich the old private key I
 	// to the above new private key [I, T]
 	pubKey := KeySwitchMatrix(PrivateKey{I}, T)
-	return PrivateKey{PrivKey}, pubKey
+	return &PrivateKey{PrivKey}, pubKey
 
 }
 
 // TODO: when doing encryption, we should use a public key, in the paper, that is M
 // HOW to fix this ?
-func Encrypt(pubk PublicKey, x Plaintext) Ciphertext {
+func Encrypt(pubk PublicKey, x Plaintext) *Ciphertext {
 	// I := IdentityE(x.GetRows())
 	// var xSub = make([]*big.Int, 0)
 	// xSub = append(xSub, x.data...)
@@ -194,14 +194,14 @@ func Decrypt(prvk PrivateKey, c Ciphertext) Plaintext {
 
 // SwitchCipher returns a new ciphertext using the public key M to
 // multiply the bit vector of the ciphertext
-func SwitchCipher(M PublicKey, c Ciphertext) Ciphertext {
+func SwitchCipher(M PublicKey, c Ciphertext) *Ciphertext {
 	cstar := getBitVector(c.Matrix)
-	return Ciphertext{DotPruduct(M.Matrix, cstar)}
+	return &Ciphertext{DotPruduct(M.Matrix, cstar)}
 }
 
 // AddCiphertext returns the sum of the 2 input ciphertext
-func AddCiphertext(c1, c2 Ciphertext) Ciphertext {
-	return Ciphertext{AddMatrix(c1.Matrix, c2.Matrix)}
+func AddCiphertext(c1, c2 Ciphertext) *Ciphertext {
+	return &Ciphertext{AddMatrix(c1.Matrix, c2.Matrix)}
 }
 
 // S: the original private key
@@ -211,11 +211,11 @@ func AddCiphertext(c1, c2 Ciphertext) Ciphertext {
 //  		M.GetColumns() = S.GetColumns()
 // Therefor, we could only manually adjust T.GetColumns() to reshape new ciphertext's row
 // Thus we could reduce the ciphertext's dimensions
-func KeySwitchMatrix(S PrivateKey, T Matrix) PublicKey {
+func KeySwitchMatrix(S PrivateKey, T Matrix) *PublicKey {
 	sStar := getBitMatrix(S.Matrix)
 	A := getRandomMatrix(T.GetColumns(), sStar.GetColumns(), aBound)
 	E := getRandomMatrix(sStar.GetRows(), sStar.GetColumns(), bBound)
-	up1 := AddMatrix(sStar, E)
+	up1 := AddMatrix(*sStar, E)
 	up2 := SubMatrix(up1, DotPruduct(T, A))
 	ASLice := Matrix2ToSlices(A)
 	USlice := Matrix2ToSlices(up2)
@@ -228,7 +228,7 @@ func KeySwitchMatrix(S PrivateKey, T Matrix) PublicKey {
 			res = append(res, j)
 		}
 	}
-	return PublicKey{NewMatrix(E.GetRows()+A.GetRows(), A.GetColumns(), res)}
+	return &PublicKey{NewMatrix(E.GetRows()+A.GetRows(), A.GetColumns(), res)}
 }
 
 // THIS IS A SERVER SIDE METHOD:
@@ -236,7 +236,7 @@ func KeySwitchMatrix(S PrivateKey, T Matrix) PublicKey {
 // which are equal in length and width, and returns the result of their inner product, which
 // should be decrypted with a new private key constructed by the ciphertexts' private keys
 // (this means that the input ciphertexts may have different or the same keys).
-func GetInnerProduct(c1, c2 Ciphertext, M PublicKey) Ciphertext {
+func GetInnerProduct(c1, c2 Ciphertext, M PublicKey) *Ciphertext {
 	if c1.GetRows() != c2.GetRows() || c1.GetColumns() != c2.GetColumns() {
 		panic("Unmatched shape of c1 and c2: c1.GetRows()/c1.GetColumns() should be equal c2.GetRows()/Columns.")
 	}
@@ -261,14 +261,14 @@ func GetInnerProduct(c1, c2 Ciphertext, M PublicKey) Ciphertext {
 	}
 	var flattenc1c2TMatrix = NewCiphertext(flattenc1c2T)
 	// do the dimension reduction
-	return SwitchCipher(M, flattenc1c2TMatrix)
+	return SwitchCipher(M, *flattenc1c2TMatrix)
 }
 
 // THIS IS A CLIENT SIDE METHOD:
 // GetInnerProductKey compute a new temporary private key which is
 // very long and cannot be used directly to decrypt the new
 // ciphertext returned by GetInnerProduct.
-func GetInnerProductLongKey(s1, s2 PrivateKey) PrivateKey {
+func GetInnerProductLongKey(s1, s2 PrivateKey) *PrivateKey {
 	if s1.GetRows() != s2.GetRows() || s1.GetColumns() != s2.GetColumns() {
 		panic("Unmatched shape of s1 and s2: s1.GetRows()/s1.GetColumns() should be equal s2.GetRows()/s2.GetColumns().")
 	}
@@ -278,7 +278,7 @@ func GetInnerProductLongKey(s1, s2 PrivateKey) PrivateKey {
 	for i := 0; i < s1Ts2.GetRows(); i++ {
 		s1Ts2Flatten = append(s1Ts2Flatten, s1Ts2.RowOfMatrix(i)...)
 	}
-	return PrivateKey{NewMatrix(1, s1Ts2.GetRows()*s1Ts2.GetRows(), s1Ts2Flatten)}
+	return &PrivateKey{NewMatrix(1, s1Ts2.GetRows()*s1Ts2.GetRows(), s1Ts2Flatten)}
 }
 
 // THIS IS A CLINET SIDE METHOD:
@@ -293,7 +293,7 @@ func GetInnerProductLongKey(s1, s2 PrivateKey) PrivateKey {
 // @Param: s = vec(s1Ts2), that is the key generated by GetInnerProductLongKey
 // @Return: M: the key switching matrix to reduce ciphertext's dimension
 //			S: the final private key to decrypt the dimension-reduced ciphertext
-func GetInnerProductKeyPairs(s PrivateKey) (PrivateKey, PublicKey) {
+func GetInnerProductKeyPairs(s PrivateKey) (*PrivateKey, *PublicKey) {
 	var n = int(math.Sqrt(float64(s.GetColumns())))
 	var T = getRandomMatrix(1, n-1, tBound)
 	var S = getSecretKey(T)
@@ -401,7 +401,7 @@ func getBitVector(c Matrix) Matrix {
 
 // getBitMatrix return a bit representation of a matrix
 // see "getBitVector" for more information
-func getBitMatrix(s Matrix) Matrix {
+func getBitMatrix(s Matrix) *Matrix {
 	var powers = make([]string, l)
 	for i := 0; i < l; i++ {
 		powers[i] = strconv.FormatFloat(math.Pow(2, float64(i)), 'f', 0, 64)
@@ -414,13 +414,13 @@ func getBitMatrix(s Matrix) Matrix {
 		}
 	}
 	var final = NewMatrix(s.GetRows(), s.GetColumns()*l, res)
-	return final
+	return &final
 }
 
 // getSecretKey returns a privateKey,it simply concatenates an
 // identity matrix with the input matrix, thus [I, T], the
 // PrivateKey is returned
-func getSecretKey(T Matrix) PrivateKey {
+func getSecretKey(T Matrix) *PrivateKey {
 	I := IdentityE(T.GetRows())
 	var (
 		ISlice = make([][]*big.Int, 0)
@@ -438,7 +438,7 @@ func getSecretKey(T Matrix) PrivateKey {
 		}
 	}
 	A := NewMatrix(I.GetRows(), I.GetColumns()+T.GetColumns(), res)
-	return PrivateKey{A}
+	return &PrivateKey{A}
 }
 
 // nearestInteger returns the nearest interger of the input divided by w
