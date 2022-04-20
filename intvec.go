@@ -2,7 +2,7 @@
  * @Author: Wen Jiajun
  * @Date: 2022-01-29 15:03:03
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-04-17 22:16:44
+ * @LastEditTime: 2022-04-20 12:08:11
  * @FilePath: \integer-vector-homomorphic-encryption\intvec.go
  * @Description: an implementation for integer vector encryption schema
  *               see(https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.471.387&rep=rep1&type=pdf)
@@ -21,7 +21,7 @@ import (
 
 const (
 	//      = 10
-	l      = 100
+	l      = 45
 	aBound = 100
 	bBound = 1000
 	tBound = 100
@@ -63,6 +63,29 @@ func (pk PublicKey) Convert2Byte() []byte {
 // key unchanged.
 func (sk PrivateKey) Convert2Byte() []byte {
 	return sk.Marshal()
+}
+
+func (sk PrivateKey) GetT() *Matrix {
+	r := sk.GetRows()
+	var T_data [][]*big.Int
+	for c := r; c < sk.columns; c++ {
+		T_data = append(T_data, sk.ColumnOfMatrix(c))
+	}
+
+	col := len(T_data)
+	row := len(T_data[0])
+	var T_data_T [][]*big.Int
+	for r := 0; r < row; r++ {
+		var tmp []*big.Int
+		for c := 0; c < col; c++ {
+			tmp = append(tmp, T_data[c][r])
+		}
+		T_data_T = append(T_data_T, tmp)
+	}
+
+	res := Slices2ToMatrix(T_data_T)
+	var resp *Matrix = &res
+	return resp
 }
 
 // NewPrivateKeyFromByte creates a private key from []byte input

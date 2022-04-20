@@ -2,7 +2,7 @@
  * @Author: Wen Jiajun
  * @Date: 2022-01-29 15:03:03
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-03-11 18:04:00
+ * @LastEditTime: 2022-04-20 11:44:40
  * @FilePath: \integer-vector-homomorphic-encryption\intvec_test.go
  * @Description: an implementation for integer vector encryption schema
  *               see(https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.471.387&rep=rep1&type=pdf)
@@ -72,6 +72,29 @@ func TestNewPrivateKeyFromByte(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewPrivateKeyFromByte() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPrivateKey_GetT(t *testing.T) {
+	sk, _ := GetKeyPairs(10, 10, 10000)
+	tests := []struct {
+		name string
+		sk   PrivateKey
+		want *Matrix
+	}{
+		// TODO: Add test cases.
+		{
+			"1",
+			*sk,
+			&Matrix{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.sk.GetT(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("PrivateKey.GetT() = %v, want %v", got, tt.want)
 			}
 		})
 	}
