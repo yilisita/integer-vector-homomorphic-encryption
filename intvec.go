@@ -2,7 +2,7 @@
  * @Author: Wen Jiajun
  * @Date: 2022-01-29 15:03:03
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-04-20 12:08:11
+ * @LastEditTime: 2022-04-25 20:56:36
  * @FilePath: \integer-vector-homomorphic-encryption\intvec.go
  * @Description: an implementation for integer vector encryption schema
  *               see(https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.471.387&rep=rep1&type=pdf)
@@ -223,7 +223,7 @@ func SwitchCipher(M *PublicKey, c *Ciphertext) *Ciphertext {
 }
 
 // AddCiphertext returns the sum of the 2 input ciphertext
-func AddCiphertext(c1, c2 Ciphertext) *Ciphertext {
+func AddCiphertext(c1, c2 *Ciphertext) *Ciphertext {
 	return &Ciphertext{AddMatrix(c1.Matrix, c2.Matrix)}
 }
 
