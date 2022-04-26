@@ -2,7 +2,7 @@
  * @Author: Wen Jiajun
  * @Date: 2022-01-29 15:03:03
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-04-25 20:56:36
+ * @LastEditTime: 2022-04-26 14:08:57
  * @FilePath: \integer-vector-homomorphic-encryption\intvec.go
  * @Description: an implementation for integer vector encryption schema
  *               see(https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.471.387&rep=rep1&type=pdf)
@@ -21,7 +21,7 @@ import (
 
 const (
 	//      = 10
-	l      = 45
+	l      = 100
 	aBound = 100
 	bBound = 1000
 	tBound = 100
@@ -140,7 +140,7 @@ func NewCiphertext(data []*big.Int) *Ciphertext {
 //
 // @param: row = the message vector's length
 //
-// @param: col = the ciphertext vector's length(self-defined)
+// @param: col = the ciphertext vector's length(self-defined) - row
 //
 // @return: (privKey, pubKey)
 func GetKeyPairs(row, col, bound int) (*PrivateKey, *PublicKey) {
