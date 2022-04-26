@@ -2,7 +2,7 @@
  * @Author: Wen Jiajun
  * @Date: 2022-01-29 15:03:03
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-04-26 15:19:24
+ * @LastEditTime: 2022-04-26 15:31:56
  * @FilePath: \integer-vector-homomorphic-encryption\intvec.go
  * @Description: an implementation for integer vector encryption schema
  *               see(https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.471.387&rep=rep1&type=pdf)
@@ -206,7 +206,7 @@ func Decrypt(prvk *PrivateKey, c *Ciphertext) *Plaintext {
 		iFloat, _ := strconv.ParseFloat(i.String(), 64)
 		temp = (nearestInteger(iFloat))
 		if temp < 0 {
-			temp = temp - 1
+			temp = temp * -1
 		}
 		tempStr := strconv.FormatFloat(temp, 'f', 0, 64)
 		tempRes, _ := new(big.Int).SetString(tempStr, 10)
