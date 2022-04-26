@@ -2,7 +2,7 @@
  * @Author: Wen Jiajun
  * @Date: 2022-01-29 15:03:03
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-04-26 14:08:57
+ * @LastEditTime: 2022-04-26 15:19:24
  * @FilePath: \integer-vector-homomorphic-encryption\intvec.go
  * @Description: an implementation for integer vector encryption schema
  *               see(https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.471.387&rep=rep1&type=pdf)
@@ -341,7 +341,7 @@ func convertToBin(num *big.Int) string {
 	s = fmt.Sprintf("%b", num)
 	s = fillStrLengthToL(s, l)
 	if negative {
-		return "-" + s
+		return "-" + s[1:]
 	}
 	return s
 }
