@@ -2,7 +2,7 @@
  * @Author: Wen Jiajun
  * @Date: 2022-01-29 15:03:03
  * @LastEditors: Wen Jiajun
- * @LastEditTime: 2022-04-26 15:31:56
+ * @LastEditTime: 2022-04-26 16:34:03
  * @FilePath: \integer-vector-homomorphic-encryption\intvec.go
  * @Description: an implementation for integer vector encryption schema
  *               see(https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.471.387&rep=rep1&type=pdf)
@@ -264,12 +264,16 @@ func GetInnerProduct(c1, c2 *Ciphertext, M *PublicKey) *Ciphertext {
 		panic("Unmatched shape of c1 and c2: c1.GetRows()/c1.GetColumns() should be equal c2.GetRows()/Columns.")
 	}
 
-	if M.GetColumns() != c1.GetRows()*c2.GetRows()*l {
-		panic("Cannot use M to reduce the dimension of vec(c1 * c2'): M.GetColumns() and vec(c1 * c2').GetRows() unmatched.")
-	}
+	// if M.GetColumns() != c1.GetRows()*c2.GetRows()*l {
+	// 	panic("Cannot use M to reduce the dimension of vec(c1 * c2'): M.GetColumns() and vec(c1 * c2').GetRows() unmatched.")
+	// }
 	// calculate the new ciphertext
 	// c1c2T = c1 * c2'
-	var c1c2T = DotPruduct(c1.Matrix, c2.Transpose())
+
+	var c1new = SwitchCipher(M, c1)
+	var c2new = SwitchCipher(M, c2)
+
+	var c1c2T = DotPruduct(c1new.Matrix, c2new.Transpose())
 
 	// construct vec(c1c2T)
 	var flattenc1c2T []*big.Int
@@ -284,7 +288,7 @@ func GetInnerProduct(c1, c2 *Ciphertext, M *PublicKey) *Ciphertext {
 	}
 	var flattenc1c2TMatrix = NewCiphertext(flattenc1c2T)
 	// do the dimension reduction
-	return SwitchCipher(M, flattenc1c2TMatrix)
+	return flattenc1c2TMatrix
 }
 
 // THIS IS A CLIENT SIDE METHOD:
